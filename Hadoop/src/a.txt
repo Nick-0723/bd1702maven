@@ -1,0 +1,748 @@
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+public class CatDemo_0010 {
+    public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException {
+        //创建configuration
+        Configuration conf = new Configuration();
+        FileSystem fs = FileSystem.get(URI.create("hdfs://10.10.2.80:9000/user/hadoop/a.txt"),conf,"hadoop");
+        FSDataInputStream in = fs.open(new Path("hdfs://10.10.2.80:9000/user/hadoop/a.txt"));
+        byte[] buff = new byte[1024];
+        int length = -1;
+        while ((length=in.read(buff))!=-1){
+            System.out.println(new String(buff,0,length));
+        }
+
+
+//        if(fs.delete(new Path(args[0]),true)) System.out.println("删除成功");
+
+        in.close();
+
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.io.InputStream;
+import java.net.URI;
+
+public class DataIntegrity_Get_0010 extends Configured implements Tool {
+    private FileSystem fs;
+    private InputStream in;
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        String output1 = conf.get("output1");
+        String output2 = conf.get("output2");
+        fs = new RawLocalFileSystem();
+        fs.initialize(URI.create(output1),conf);
+        in = fs.open(new Path(output1));
+        byte[] b = new byte[1024];
+        int len = in.read(b);
+        System.out.println(new String(b,0,len));
+
+
+        fs = new LocalFileSystem(fs);
+        in = fs.open(new Path(output2));
+        len = in.read(b);
+        System.out.println(new String(b,0,len));
+
+        in.close();
+
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new DataIntegrity_Get_0010(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.net.URI;
+
+public class DataIntegrity_Put_0010 extends Configured implements Tool {
+    private FileSystem fs;
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        String output1 = conf.get("output1");
+        String output2 = conf.get("output2");
+        fs = new RawLocalFileSystem();
+        fs.initialize(URI.create(output1),conf);
+        FSDataOutputStream fdos = fs.create(new Path(output1));
+        fdos.write("rrrrrrrrrrrrrrrrrrrrrrrrrrrrr".getBytes());
+        fdos.flush();
+        fdos.close();
+
+        fs = new LocalFileSystem(fs);
+        FSDataOutputStream fdos1 = fs.create(new Path(output2));
+        fdos1.write("lllllllllllllllllllllllllll".getBytes());
+        fdos1.flush();
+        fdos1.close();
+
+
+
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new DataIntegrity_Put_0010(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.io.*;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Exercise extends Configured implements Tool {
+
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        InputStream in = null;
+        BufferedReader br = null;
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream("Hadoop/res.txt")));
+        try {
+            Map<String,Long> map = new HashMap<>();
+            Configuration conf = getConf();
+            String url = "hdfs://1.1.1.5:9000/data/data.txt";
+            FileSystem fileSystem = FileSystem.get(URI.create(url), conf, "nick");
+            in = fileSystem.open(new Path(url));
+            br = new BufferedReader(new InputStreamReader(in));
+            System.out.println("start resolve data");
+            String s;
+            while((s = br.readLine())!=null) {
+                String data = s.split("[,]")[1];
+                if(map.containsKey(data)) map.put(data,map.get(data)+1);
+                else map.put(data,1L);
+            }
+            System.out.println("resolved data, writing in file");
+            map.forEach((k,v)-> out.println(k+" : "+v));
+            out.flush();
+        } finally {
+            if (in != null) { in.close(); }
+            if (br != null) { br.close(); }
+            out.close();
+        }
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new Exercise(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.*;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URI;
+
+public class GetDemo_0010 {
+
+    public static void main(String[] args) throws Exception{
+        Configuration configuration = new Configuration();
+        FileSystem fileSystem = FileSystem.get(URI.create("hdfs://10.10.2.80:9000/user/hadoop/a.txt"), configuration, "hadoop");
+//        这个可以直接拷贝
+//        fileSystem.copyToLocalFile(new Path("hdfs://10.10.2.80:9000/user/hadoop/a.txt"),new Path("/home/hadoop/a.txt"));
+        FSDataInputStream inputStream = fileSystem.open(new Path("hdfs://10.10.2.80:9000/user/hadoop/a.txt"));
+//        这个是拿到Windows下
+//        FileOutputStream out = new FileOutputStream("a.txt");
+
+//        这个要有Hadoop环境才能用,并且会有一个.开头crc后缀的隐藏文件
+        LocalFileSystem local = FileSystem.getLocal(configuration);
+        FSDataOutputStream out = local.create(new Path("/home/hadoop/a.txt"));
+        byte[] b = new byte[1024];
+        int len = -1;
+        while ((len = inputStream.read(b))!=-1){
+            out.write(b,0,len);
+        }
+        out.flush();
+        out.close();
+        inputStream.close();
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.apache.hadoop.io.SequenceFile.Reader.*;
+
+public class GetSequenceFile extends Configured implements Tool {
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+
+        Path p = new Path("hdfs://10.10.2.80:9000/user/hadoop/test1.seq");
+        Option option = SequenceFile.Reader.file(p);
+        SequenceFile.Reader reader = new SequenceFile.Reader(conf,option);
+        Text key = (Text)reader.getKeyClass().newInstance();
+        BytesWritable value = (BytesWritable)reader.getValueClass().newInstance();
+
+        String outputPath = "G:/BD1702/bd1702maven/Hadoop/logs";
+        while (reader.next(key,value)){
+
+           if (reader.syncSeen() && key.toString().equals(new String(value.copyBytes())))
+               Files.createDirectories(Paths.get(outputPath +key.toString()));
+           else
+               Files.write(Paths.get(outputPath +key.toString()),value.copyBytes());
+
+        }
+
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new GetSequenceFile(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+
+import org.apache.commons.collections.bag.SynchronizedSortedBag;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+import java.io.*;
+import java.net.URI;
+import java.util.*;
+
+public class Lamba {
+    public static void main(String[] args) throws FileNotFoundException {
+
+        String input = "hdfs://1.1.1.5:9000/data/data.txt";
+        Map<String, Integer> vocList = createVocList(input);
+        vocList.forEach((n, v) -> {
+            System.out.println(n + " : " + v);
+        });
+    }
+
+    public static Map<String, Integer> createVocList(String path) {
+        HashMap<String, Integer> reduce = null;
+        BufferedReader br = null;
+        try {
+            Configuration con = new Configuration();
+            FileSystem fs = FileSystem.get(URI.create(path), con, "njhserver");
+            FSDataInputStream fis = fs.open(new Path(path));
+            br = new BufferedReader(new InputStreamReader(fis));
+            List<String> list = new ArrayList<>();
+            String content;
+            while ((content = br.readLine()) != null) {
+                list.add(content);
+            }
+            reduce = list.stream().reduce(new HashMap<String, Integer
+                    >(), (map, str) -> {
+                String[] fileSpart = str.split(",");
+                if (fileSpart.length == 2) {
+                    Integer integer = map.get(fileSpart[1]);
+                    if (integer == null) {
+                        map.put(fileSpart[1].trim(), 1);
+                    } else {
+                        integer += 1;
+                        map.put(fileSpart[1].trim(), integer);
+                    }
+                }
+                return map;
+            }, (left, right) -> {
+                left.putAll(right);
+                return left;
+            });
+        } catch (Exception e) {
+            br.close();
+            e.printStackTrace();
+        } finally {
+            try {
+                br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return reduce;
+        }
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.client.HdfsDataInputStream;
+import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
+import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
+import org.apache.hadoop.hdfs.protocol.LocatedBlock;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.net.URI;
+import java.util.List;
+
+public class ListBlocks_0010 extends Configured implements Tool {
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new ListBlocks_0010(),args));
+    }
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        String input = conf.get("input");
+        FileSystem fs = FileSystem.get(URI.create(input),conf);
+        //块信息在HdfsDataInputStream流里面
+        HdfsDataInputStream in = (HdfsDataInputStream)fs.open(new Path(input));
+        List<LocatedBlock> blocks = in.getAllBlocks();
+//        Stream<LocatedBlock> stream = blocks.stream();
+        blocks.forEach((block)->{
+            ExtendedBlock extendedBlock = block.getBlock();
+            System.out.println("================");
+            System.out.println("getBlockId:"+extendedBlock.getBlockId());
+            System.out.println("getBlockName:"+extendedBlock.getBlockName());
+            System.out.println("getBlockSize:"+block.getBlockSize());
+            System.out.println("getStartOffset:"+block.getStartOffset());
+
+
+            DatanodeInfo[] infos = block.getLocations();
+            for(DatanodeInfo info : infos){
+                System.out.println("getIpAddr:"+info.getIpAddr());
+                System.out.println("getHostName:"+info.getHostName());
+            }
+        });
+        /*for(LocatedBlock block : blocks){
+            ExtendedBlock extendedBlock = block.getBlock();
+            System.out.println("================");
+            System.out.println("getBlockId:"+extendedBlock.getBlockId());
+            System.out.println("getBlockName:"+extendedBlock.getBlockName());
+            System.out.println("getBlockSize:"+block.getBlockSize());
+            System.out.println("getStartOffset:"+block.getStartOffset());
+
+
+            DatanodeInfo[] infos = block.getLocations();
+            for(DatanodeInfo info : infos){
+                System.out.println("getIpAddr:"+info.getIpAddr());
+                System.out.println("getHostName:"+info.getHostName());
+            }
+        }*/
+
+
+        return 0;
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Date;
+
+public class ListFileStatus_0010 extends Configured implements Tool {
+    private FileSystem fs = null;
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new ListFileStatus_0010(),args));
+    }
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        String input = "hdfs://10.10.2.80:9000/";
+        fs = FileSystem.get(URI.create(input),conf,"hadoop");
+        FileStatus[] fileStatuses = fs.listStatus(new Path(input));
+        for(FileStatus fileStatuse:fileStatuses){
+            process(fileStatuse);
+        }
+
+
+        return 0;
+    }
+
+    private void process(FileStatus fileStatus) throws IOException {
+        if(fileStatus.isFile()){
+            System.out.println("----------------------");
+            System.out.println("getAccessTime--"+new Date(fileStatus.getAccessTime()));
+            System.out.println("getOwner--"+fileStatus.getOwner());
+            System.out.println("getGroup--"+fileStatus.getGroup());
+            System.out.println("getPermission--"+fileStatus.getPermission());
+            String[] s = fileStatus.getPath().toString().split("[/]");
+            System.out.println("getPath--"+s[s.length-1]);
+            System.out.println("getReplication--"+fileStatus.getReplication());
+        }else if(fileStatus.isDirectory()){
+            FileStatus[] fileStatuses = fs.listStatus(fileStatus.getPath());
+            for(FileStatus status:fileStatuses){
+                process(status);
+            }
+        }
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.net.URI;
+
+public class PutDemo_0010 extends Configured implements Tool {
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        String input = conf.get("input","/home/hadoop/id_rsa.pub");
+        String output = conf.get("output","hdfs://10.10.2.80:9000:/user/hadoop/b.txt");
+        FileSystem fs = FileSystem.get(URI.create(output),conf);
+        FSDataOutputStream out = fs.create(new Path(output));
+        LocalFileSystem lfs = LocalFileSystem.getLocal(conf);
+        FSDataInputStream in = lfs.open(new Path(input));
+        IOUtils.copyBytes(in,out,1024,true);
+
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new PutDemo_0010(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+
+import static org.apache.hadoop.io.SequenceFile.Writer.*;
+
+public class PutSequenceFile extends Configured implements Tool {
+
+    private FileSystem local;
+    Configuration conf;
+    private SequenceFile.Writer writer = null;
+    private String source = "G:/BD1702/bd1702maven/Hadoop/src";
+
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        conf = getConf();
+//        Path sourcePath = new Path(conf.get("sourcePath"));
+
+        Path sourcePath = new Path(source);
+
+//        Path outputPath = new Path(conf.get("outputPath"));
+        Path outputPath = new Path("hdfs://10.10.2.80:9000/user/hadoop/test1.seq");
+        Option option_file = file(outputPath);
+        Option option_keyType = keyClass(Text.class);
+        Option option_valueType = valueClass(BytesWritable.class);
+
+        writer = SequenceFile.createWriter(conf,option_file,option_keyType,option_valueType);
+
+        local = FileSystem.getLocal(conf);
+        FileStatus[] status = local.listStatus(sourcePath);
+        try {
+            for(FileStatus statu : status){
+                process(statu);
+            }
+        } finally {
+            writer.close();
+        }
+
+
+        return 0;
+    }
+
+    private void seqWriter(String key, byte[] value,boolean sync) throws IOException {
+        key = key.split(source)[1];
+        if(sync) {
+            value = key.getBytes();
+            writer.sync();
+        }
+        writer.append(new Text(key),new BytesWritable(value));
+    }
+
+    private void process(FileStatus status) throws Exception {
+        InputStream in = null;
+        byte[] b = new byte[10240];
+        int len;
+        String path = status.getPath().toString();
+        try {
+            if(status.isFile()){
+                in = local.open(status.getPath());
+                int off = 0;
+                while ((len = in.read(b,off,10240)) != -1){
+                    b = Arrays.copyOf(b, b.length * 2);
+                    off = len;
+                }
+                seqWriter(path,b,false);
+            } else if (status.isDirectory()){
+                seqWriter(path,b,true);
+                FileStatus[] temp = local.listStatus(status.getPath());
+                for (FileStatus f : temp){
+                    process(f);
+                }
+            }
+        } finally {
+            if(in != null) in.close();
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new PutSequenceFile(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+public class SeqReaderTest_0010 extends Configured implements Tool {
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        Path input = new Path("hdfs://10.10.2.80:9000/user/hadoop/test1.seq");
+
+        //创建读取器的选项 Option的对象
+        SequenceFile.Reader.Option option_1 = SequenceFile.Reader.file(input);
+        //创建读取器Reader对象
+        SequenceFile.Reader reader = new SequenceFile.Reader(conf, option_1);
+        Object key = reader.getKeyClass().newInstance();
+        Object value = reader.getValueClass().newInstance();
+        //开始读取数据
+        while (reader.next((Writable) key,(Writable)value)){
+            // 判断当前的Record是否有同步标记 如果有打印* 如果没有打印空格
+//            String syncStr = reader.syncSeen() ? "*" : " ";
+//            System.out.println(syncStr+" : "+key);
+
+            reader.sync(reader.getPosition());
+            String syncStr = reader.syncSeen() ? "*" : " ";
+            System.out.println(syncStr+" : "+key+" : "+ new String(((BytesWritable)value).copyBytes()));
+            System.out.println(key.toString().equals(new String(((BytesWritable)value).copyBytes())));
+        }
+
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new SeqReaderTest_0010(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+public class SeqWriterTest_0010 extends Configured implements Tool {
+    private static final String[] DATA={
+      "One car com one car go",
+      "Two car peng peng people die",
+      "120 wu wa wu wa come"
+    };
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        Path output = new Path(conf.get("output"));
+        SequenceFile.Writer writer = null;
+
+        try {
+            //准备至少三个选项
+
+            //1. 文件存储路径
+            SequenceFile.Writer.Option option_1 = SequenceFile.Writer.file(output);
+            //2. 指定键的数据类型
+            SequenceFile.Writer.Option option_2 = SequenceFile.Writer.keyClass(IntWritable.class);
+            //3. 指定值的数据类型
+            SequenceFile.Writer.Option  option_3 = SequenceFile.Writer.valueClass(Text.class);
+
+            //构建SequenceFile.Writer对象
+
+            writer = SequenceFile.createWriter(conf, option_1, option_2, option_3);
+
+            for (int i = 0; i < 100; i++) {
+                writer.append(new IntWritable(i),new Text(DATA[i%DATA.length]));
+            }
+        } finally {
+            if (writer != null) { writer.close(); }
+        }
+
+
+
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new SeqWriterTest_0010(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+public class SeqWriterTest_0011 extends Configured implements Tool {
+    private static final String[] DATA={
+      "One car com one car go",
+      "Two car peng peng people die",
+      "120 wu wa wu wa come"
+    };
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        Path output = new Path("hdfs://172.16.0.4:9000/tmp/a.seq");
+        SequenceFile.Writer writer = null;
+
+        try {
+            //准备至少三个选项
+
+            //1. 文件存储路径
+            SequenceFile.Writer.Option option_1 = SequenceFile.Writer.file(output);
+            //2. 指定键的数据类型
+            SequenceFile.Writer.Option option_2 = SequenceFile.Writer.keyClass(IntWritable.class);
+            //3. 指定值的数据类型
+            SequenceFile.Writer.Option  option_3 = SequenceFile.Writer.valueClass(Text.class);
+
+            //构建SequenceFile.Writer对象
+
+            writer = SequenceFile.createWriter(conf, option_1, option_2, option_3);
+
+            for (int i = 0; i < 100; i++) {
+                if(i%3==0)writer.sync();
+                writer.append(new IntWritable(i),new Text(DATA[i%DATA.length]));
+            }
+        } finally {
+            if (writer != null) { writer.close(); }
+        }
+
+
+
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new SeqWriterTest_0011(),args));
+    }
+}
+package com.briup.bd1702.hadoop.hdfs;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.io.compress.CompressionOutputStream;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.net.URI;
+
+public class WriteDemo_0010 extends Configured implements Tool {
+
+    @Override
+    public int run(String[] strings) throws Exception {
+        Configuration conf = getConf();
+        String input = conf.get("input");
+        String output = conf.get("output");
+        System.out.println(input);
+        System.out.println(output);
+        LocalFileSystem local = FileSystem.getLocal(conf);
+        FileSystem fileSystem = FileSystem.get(URI.create(output), conf, "hadoop");
+        FSDataInputStream lin = local.open(new Path(input), 1024);
+        FSDataOutputStream dfsout = fileSystem.create(new Path(output));
+        CompressionCodecFactory factory = new CompressionCodecFactory(conf);
+        CompressionCodec codec = factory.getCodec(new Path(output));
+        CompressionOutputStream out = codec.createOutputStream(dfsout);
+        IOUtils.copyBytes(lin,out,1024,true);
+        return 0;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.exit(ToolRunner.run(new WriteDemo_0010(),args));
+    }
+}
+#log4j.rootLogger = ��־����,�Զ����appender ����д���,�Զ��ŷָ�
+log4j.rootLogger = DEBUG,logger
+
+#
+log4j.appender.logger = org.apache.log4j.FileAppender
+log4j.appender.logger.File = Hadoop/logs/log
+log4j.appender.logger.Threshold = INFO
+log4j.appender.logger.layout = org.apache.log4j.PatternLayout
+log4j.appender.logger.layout.ConversionPattern = [%p] %d{yyyy-MM-dd HH:mm:ss} %m%n

@@ -7,13 +7,17 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="gather" />
+        <module name="Hadoop" />
         <module name="myWoss" />
+        <module name="Test" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="bd1702maven" target="1.8" />
       <module name="gather" target="1.8" />
+      <module name="Hadoop" target="1.8" />
       <module name="myWoss" target="1.8" />
+      <module name="Test" target="1.8" />
       <module name="woss" target="1.8" />
     </bytecodeTargetLevel>
   </component>

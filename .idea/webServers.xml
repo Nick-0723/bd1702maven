@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="02b4dec2-dbf8-4ae9-82e6-8794b3adfd27" name="10.10.2.123" url="http://10.10.2.123">
+        <fileTransfer host="10.10.2.123" port="21" rootFolder="/home/hadoop">
+          <advancedOptions>
+            <advancedOptions controlEncoding="UTF-8" dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="21" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="ef1aa213-5832-456b-99c9-56dfc72c0b6a" name="1.1.1.5" url="http://1.1.1.5">
+        <fileTransfer host="1.1.1.5" port="21" rootFolder="/home/nick">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="21" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

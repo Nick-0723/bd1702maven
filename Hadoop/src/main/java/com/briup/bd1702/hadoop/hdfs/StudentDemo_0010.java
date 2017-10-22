@@ -22,8 +22,6 @@ public class StudentDemo_0010 {
         student.write(dos);
         byte[] data = baos.toByteArray();
         System.out.println(data.length+":"+Arrays.toString(data));
-
-
     }
 }
 

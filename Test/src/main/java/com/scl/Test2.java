@@ -41,4 +41,12 @@ public class Test2 {
                 .sorted()
                 .forEach(System.out::println);
     }
+
+    @Test
+    public void tess_2() {
+        int i = Integer.parseInt("+999");
+        int x = Integer.parseInt("-999");
+
+        System.out.println(i+":"+x);
+    }
 }

@@ -1,0 +1,15 @@
+MapReduce f1
+MapReduce f2
+MapReduce f3
+MapReduce f4
+MapReduce f4
+
+MapReduce [f1,f2,f3,f4,f4]
+Map<String,Integer>
+f1,1
+f2,1
+f3,1
+f4,2
+MapReduce f1:1,f2:1,f3:1,f4:2
+
+

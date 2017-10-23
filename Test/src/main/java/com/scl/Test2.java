@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.stream.Stream;
 
 public class Test2 {
+    private Integer sum;
 
     /*
     *   把G:\BD1702\bd1702maven\Test\src下的所有文件读取出来
@@ -48,5 +49,14 @@ public class Test2 {
         int x = Integer.parseInt("-999");
 
         System.out.println(i+":"+x);
+    }
+
+    @Test
+    public void test_3(){
+        sum = 0;
+        for (int i = 0; i < 10; i++) {
+            sum+=i;
+        }
+        System.out.println(sum);
     }
 }

@@ -43,7 +43,7 @@ public class Demo extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         Configuration conf = getConf();
         String inputPath = "hdfs://172.16.0.4:9000";
-        String outputPath = "hdfs://172.16.0.4:9000/temp/res_"+this.getClass().getSimpleName();
+        String outputPath = "hdfs://172.16.0.4:9000/user/nick/res_"+this.getClass().getSimpleName();
         Path input = new Path(inputPath);
         Path output = new Path(outputPath);
 

@@ -3,6 +3,7 @@ package com.scl.mapreduce;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -19,25 +20,25 @@ import java.io.IOException;
 
 /*1.以/data/weather/999999-99999-1992数据，请计算出每个气象站检测到的平均气温*/
 public class AVGTemperature extends Configured implements Tool {
-    public static class AVGMapper extends Mapper<LongWritable,Text,Text,IntWritable>{
+    public static class AVGMapper extends Mapper<LongWritable,Text,Text,DoubleWritable>{
         private WeatherParser parser = new WeatherParser();
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             parser.parse(value.toString());
             if(parser.isValid()) {
-                context.write(parser.getStationId(),new IntWritable(parser.getTemperature().get()));
+                context.write(parser.getStationId(),new DoubleWritable(parser.getTemperature().get()));
                 parser.setValid(false);
             }
         }
     }
 
-    public static class AVGReducer extends Reducer<Text,IntWritable,Text,IntWritable>{
+    public static class AVGReducer extends Reducer<Text,DoubleWritable,Text,DoubleWritable>{
         @Override
-        protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            IntWritable value = new IntWritable(0);
+        protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
+            DoubleWritable value = new DoubleWritable(0);
             int temp = 0;
             int count = 0;
-            for(IntWritable v : values){
+            for(DoubleWritable v : values){
                 temp += (v.get()/10);
                 count++;
             }
@@ -49,18 +50,18 @@ public class AVGTemperature extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
         Configuration conf = getConf();
-        Path input = new Path("hdfs://172.16.0.101:9000/data/weather/999999-99999-1992");
-        Path output = new Path("hdfs://172.16.0.101:9000/temp/res_"+this.getClass().getSimpleName()+"_nick");
+        Path input = new Path("hdfs://172.16.0.4:9000/data/weather/999999-99999-1992");
+        Path output = new Path("hdfs://172.16.0.4:9000/temp/res_"+this.getClass().getSimpleName()+"_nick");
         Job job = Job.getInstance(conf,this.getClass().getSimpleName()+"_nick");
         job.setJarByClass(this.getClass());
 
         job.setMapperClass(AVGMapper.class);
         job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
 
         job.setReducerClass(AVGReducer.class);
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(DoubleWritable.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);

@@ -1,5 +1,6 @@
-package com.scl.mapreduce.gxjz;
+package com.scl.mapreduce.libimseti.cz;
 
+import com.scl.mapreduce.gxjz.GxjzParser;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -17,7 +18,7 @@ import org.apache.hadoop.util.ToolRunner;
 import java.io.IOException;
 
 
-public class Gxjz extends Configured implements Tool {
+public class ProfileGX extends Configured implements Tool {
     public static class FriendsMapper extends Mapper<LongWritable,Text,Text,IntWritable>{
         private GxjzParser parser = new GxjzParser();
         private Text key = new Text();
@@ -31,6 +32,17 @@ public class Gxjz extends Configured implements Tool {
                     context.write(this.key,new IntWritable(1));
                 }
             }
+        }
+    }
+
+    public static class Combi extends Reducer<Text,IntWritable,Text,IntWritable>{
+        private int sum;
+
+        @Override
+        protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+            sum = 0;
+            values.forEach(a->sum += a.get());
+            context.write(key,new IntWritable(sum));
         }
     }
 
@@ -48,7 +60,7 @@ public class Gxjz extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
         Configuration conf = getConf();
-        Path input = new Path("hdfs://172.16.0.4:9000/temp/res_Friends_nick/part-r-00000");
+        Path input = new Path("hdfs://172.16.0.4:9000/temp/res_ProfileList");
         Path output = new Path("hdfs://172.16.0.4:9000/temp/res_"+this.getClass().getSimpleName()+"_nick");
         Job job = Job.getInstance(conf,this.getClass().getSimpleName()+"_nick");
         job.setJarByClass(this.getClass());
@@ -56,6 +68,8 @@ public class Gxjz extends Configured implements Tool {
         job.setMapperClass(FriendsMapper.class);
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
+
+        job.setCombinerClass(Combi.class);
 
         job.setReducerClass(FriendsReducer.class);
         job.setOutputKeyClass(Text.class);
@@ -72,6 +86,6 @@ public class Gxjz extends Configured implements Tool {
     }
 
     public static void main(String[] args) throws Exception {
-        System.exit(ToolRunner.run(new Gxjz(),args));
+        System.exit(ToolRunner.run(new ProfileGX(),args));
     }
 }

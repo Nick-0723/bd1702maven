@@ -1,21 +1,20 @@
 package com.scl.mapreduce;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 
 import java.io.*;
-
+@SuppressWarnings("all")
 public class AV implements Writable {
     private DoubleWritable num;
     private DoubleWritable avg;
 
-    public AV() {
-        this.num = new DoubleWritable();
+    AV(){
         this.avg = new DoubleWritable();
+        this.num = new DoubleWritable();
     }
 
-    public AV(DoubleWritable num,DoubleWritable avg) {
+    public AV(DoubleWritable avg,DoubleWritable num) {
         this.avg = avg;
         this.num = num;
     }
@@ -38,5 +37,29 @@ public class AV implements Writable {
 
     public DoubleWritable getAvg() {
         return avg;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AV av = (AV) o;
+
+        if (getNum() != null ? !getNum().equals(av.getNum()) : av.getNum() != null) return false;
+        return getAvg() != null ? getAvg().equals(av.getAvg()) : av.getAvg() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getNum() != null ? getNum().hashCode() : 0;
+        result = 31 * result + (getAvg() != null ? getAvg().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return num + "\t" + avg;
     }
 }

@@ -3,6 +3,7 @@ package com.scl.mapreduce;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -19,23 +20,23 @@ import java.io.IOException;
 
 /*1.以/data/weather/999999-99999-1992数据，请计算出每个气象站检测到的最高气温*/
 public class HighestTemperature extends Configured implements Tool {
-    public static class WeatherMapper extends Mapper<LongWritable,Text,Text,IntWritable>{
+    public static class WeatherMapper extends Mapper<LongWritable,Text,Text,DoubleWritable>{
         private WeatherParser parser = new WeatherParser();
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             parser.parse(value.toString());
             if(parser.isValid()){
-                context.write(parser.getStationId(),new IntWritable(parser.getTemperature().get()));
+                context.write(parser.getStationId(),new DoubleWritable(parser.getTemperature().get()));
                 parser.setValid(false);
             }
         }
     }
 
-    public static class WeatherReducer extends Reducer<Text,IntWritable,Text,IntWritable>{
+    public static class WeatherReducer extends Reducer<Text,DoubleWritable,Text,DoubleWritable>{
         @Override
-        protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            IntWritable value = new IntWritable(0);
-            for(IntWritable v : values){
+        protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
+            DoubleWritable value = new DoubleWritable(0);
+            for(DoubleWritable v : values){
                 if(v.compareTo(value)>0) value = v;
             }
             value.set(value.get()/10);
@@ -53,11 +54,11 @@ public class HighestTemperature extends Configured implements Tool {
 
         job.setMapperClass(WeatherMapper.class);
         job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
 
         job.setReducerClass(WeatherReducer.class);
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(DoubleWritable.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);

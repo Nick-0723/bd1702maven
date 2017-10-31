@@ -14,6 +14,7 @@
         <module>Hadoop</module>
         <module>Test</module>
         <module>RecommendationEngine</module>
+        <module>webDemo</module>
     </modules>
 
     <build>

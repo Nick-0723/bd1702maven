@@ -12,6 +12,7 @@
         <module name="RecommendationEngine" />
         <module name="SecondHandBooks" />
         <module name="Test" />
+        <module name="webDemo" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -22,6 +23,7 @@
       <module name="RecommendationEngine" target="1.8" />
       <module name="SecondHandBooks" target="1.8" />
       <module name="Test" target="1.8" />
+      <module name="webDemo" target="1.8" />
       <module name="woss" target="1.8" />
     </bytecodeTargetLevel>
   </component>

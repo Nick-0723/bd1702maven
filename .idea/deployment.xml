@@ -5,7 +5,7 @@
       <paths name="1.1.1.5">
         <serverdata>
           <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$/Hadoop/target" web="/" />
+            <mapping deploy="/" local="$PROJECT_DIR$/RecommendationEngine/target" web="/" />
           </mappings>
         </serverdata>
       </paths>

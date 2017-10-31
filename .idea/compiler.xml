@@ -9,6 +9,8 @@
         <module name="gather" />
         <module name="Hadoop" />
         <module name="myWoss" />
+        <module name="RecommendationEngine" />
+        <module name="SecondHandBooks" />
         <module name="Test" />
       </profile>
     </annotationProcessing>
@@ -17,6 +19,8 @@
       <module name="gather" target="1.8" />
       <module name="Hadoop" target="1.8" />
       <module name="myWoss" target="1.8" />
+      <module name="RecommendationEngine" target="1.8" />
+      <module name="SecondHandBooks" target="1.8" />
       <module name="Test" target="1.8" />
       <module name="woss" target="1.8" />
     </bytecodeTargetLevel>

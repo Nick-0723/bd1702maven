@@ -4,24 +4,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.briup</groupId>
-    <artifactId>bd1702-maven</artifactId>
-    <packaging>pom</packaging>
+    <groupId>com.scl</groupId>
+    <artifactId>SecondHandBooks</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>gather</module>
-        <module>woss</module>
-        <module>Hadoop</module>
-        <module>Test</module>
-        <module>RecommendationEngine</module>
-    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <build>
         <plugins>
-            <!-- maven的编译级别默认为1.5，该插件将默认编译级别改为1.8 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -29,6 +25,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

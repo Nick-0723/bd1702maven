@@ -2,6 +2,8 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/Hadoop" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/RecommendationEngine" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SecondHandBooks" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Test" charset="UTF-8" />
   </component>
 </project>
